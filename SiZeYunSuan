@@ -1,0 +1,77 @@
+//四则运算程序，支持真分数运算
+//2016,03,04
+
+#include<iostream>
+#include<stdlib.h>
+#include<time.h>
+using namespace std;
+
+void zuidagongyue(int chushu)
+{
+	int beichushu = 100;
+	int temp;
+	int first = beichushu%chushu;
+	while (!first == 0)
+	{
+		temp = chushu;
+		chushu = beichushu%chushu;
+		beichushu = temp;
+		first = beichushu%chushu;
+	}
+}
+
+void main()
+{
+	srand((int)time(NULL));
+
+	int A[30];
+	int B[30];
+	for (int i = 0; i < 30; i++)
+	{
+		A[i] = 1+rand() % 99;
+
+		cout << A[i]<<" " ;
+
+		B[i] = 1+rand() % 99;
+
+		cout << B[i]<<" " ;
+		cout << endl;
+	}
+	for (int i = 0; i < 30; i++)
+	{
+		if (A[i] > B[i])
+		{
+			int suanfu = rand() % 4;
+			switch (suanfu)
+			{
+			case 0:
+				cout << A[i] << " + " << B[i] << "=" << endl; break;
+			case 1:
+				cout << A[i] << " - " << B[i] << "=" << endl; break;
+			case 2:
+				cout << A[i] << " x " << B[i] << "=" << endl; break;
+			case 3:
+				cout << A[i] << " ÷ " << B[i] << "=" << endl; break;
+			}
+		}
+		if (A[i] < B[i])
+		{
+			int copyA = A[i];
+			int copyB = B[i];
+			zuidagongyue(A[i]);
+			zuidagongyue(B[i]);
+			int suanfu = rand() % 4;
+			switch (suanfu)
+			{
+			case 0:
+				cout << copyA / A[i] << "/" << 100 / A[i] << " + " << copyB / B[i] << "/" << 100 / B[i] << "=" << endl; break;
+			case 1:
+				cout << copyA / A[i] << "/" << 100 / A[i] << " - " << copyB / B[i] << "/" << 100 / B[i] << "=" << endl; break;
+			case 2:
+				cout << copyA / A[i] << "/" << 100 / A[i] << " x " << copyB / B[i] << "/" << 100 / B[i] << "=" << endl; break;
+			case 3:
+				cout << copyA / A[i] << "/" << 100 / A[i] << " ÷ " << copyB / B[i] << "/" << 100 / B[i] << "=" << endl; break;
+			}
+		}
+	}
+}
