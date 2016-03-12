@@ -1,0 +1,641 @@
+//四则运算程序2,从四则运算程序1的基础之上进行功能扩展
+//支持真分数运算，题目不重复,最多可支持十个运算数的带括号的运算式
+//多项四则运算式以及分数除法未予考虑余数，整数除法可以实现整除功能
+//2016,03,09
+
+#include<iostream>
+#include<fstream>
+#include<stdlib.h>
+#include<time.h>
+using namespace std;
+
+void main()
+{
+	srand((int)time(NULL));
+	//定义变量，记录用户的功能选择选项
+	int minfigure;
+	int maxfigure;
+	int count;
+	int chengchu;
+	int remainder_chengchu;
+	int negative_jiajian;
+	int printstyle;
+	//功能设置界面
+	cout << "*******************************************************************" << endl;
+	cout << "*                         四则运算生成器                          *" << endl;
+	cout << "*******************************************************************" << endl;
+	cout << "请按照系统提示设置生成器的功能：" << endl;
+	cout << "请输入参与四则运算的数值范围(格式如：1  100)：" ;
+	cin >> minfigure >> maxfigure;
+	cout << "请输入生成四则运算式的数量：";
+	cin >> count;
+	cout << "请选择打印方式（1 屏幕输出  0 输出到文档）：";
+	cin >> printstyle;
+	cout << "请设置系统的下列参数：" << endl;
+	cout << "    1 四则运算可否生成乘除法（1 是  0 否）：";
+	cin >> chengchu;
+	if (1 == chengchu)
+	{
+		cout << "    2 除法是否可有余数（1 是  0 否）：";
+		cin >> remainder_chengchu;
+	}
+	else
+	{
+		cout << "    2 加减法是否可以有负数（1 是  0 否）：";
+		cin >> negative_jiajian;
+	}
+	cout << "功能设置完成！" << endl;
+	cout << "*******************************************************************" << endl;
+
+	int i, j;
+	int A[100];
+	int B[100];
+	int mark[9];
+	int Operator[10];
+	char operatorFu[9];
+	int Operatorfu[9];
+	//生成用户指定数量的运算式的因子，为保证算式不重复，让生成的随机数都不重复
+	for (i = 0; i < count; i++)
+	{
+		A[i] = minfigure + rand() % maxfigure;
+		B[i] = minfigure + rand() % maxfigure;
+		for (j = 0; j < i; j++)
+		{
+			if (A[i] == A[j])
+			{
+				A[i] = minfigure + rand() % maxfigure;
+				j = 0;
+			}
+			if (B[i] == B[j])
+			{
+				B[i] = minfigure + rand() % maxfigure;
+				j = 0;
+			}
+		}
+	}
+	//根据用户的选择产生功能分支
+	if (1 == printstyle)   //运算式输出到屏幕上
+	{
+		if (1 == chengchu)  //是否可以生成除法
+		{
+			if (remainder_chengchu)  //除法可否有余数，分数除法谈论是否有余数无意义
+			{
+				cout << "*******************************************************************" << endl;
+				cout << "生成的四则运算式如下所示：" << endl;
+				cout << "*******************************************************************" << endl;
+				for (i = 0; i < count; i++)
+				{
+					if (A[i] > B[i])   //如果A[i]>B[i],则后续程序生成带括号的多项因子的四则运算
+					{
+						int m;
+						int operator_count = 3 + rand() % 8;   //随机生成多项因子的个数
+						int operatorfu_count = operator_count - 1;  //算符的个数比因子的个数少一
+						for (m = 0; m < operator_count; m++)
+						{
+							Operator[m] = minfigure + rand() % maxfigure;   //生成多项因子
+						}
+						for (m = 0; m < operatorfu_count; m++)
+						{
+							Operatorfu[m] = rand() % 4;                  //生成多项式的算符
+						}
+						for (m = 1; m < operator_count; m++)
+						{
+							if ((Operatorfu[m] / 2)>(Operatorfu[m - 1] / 2))  //乘除用3和4表示，加减用1和2表示，让其除以二得商0和1，可以区分出乘除为同一优先级，加减比乘除优先级低
+							{                                                 //若后一个运算符的优先级比前一个运算符的优先级高，则将前一个运算符对应的式子用括号括起来，确保了运算优先级低的加减运算在括号里面
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									cout << "(" << Operator[m - 1] << " + " << Operator[m] << ")"; break;
+								case 1:
+									cout << "(" << Operator[m - 1] << " - " << Operator[m] << ")"; break;
+								case 2:
+									cout << "(" << Operator[m - 1] << " x " << Operator[m] << ")"; break;
+								case 3:
+									if (0 == Operator[m])
+									{
+										cout << "(" << Operator[m - 1] << " ÷ " << Operator[m] + 2 << ")";
+									}
+									break;   //若分子为零时，则让分子加2，即除以2
+								}
+								switch (Operatorfu[m])
+								{
+								case 0:
+									cout << " + "; m = m + 1; break;
+								case 1:
+									cout << " - "; m = m + 1; break;
+								case 2:
+									cout << " x "; m = m + 1; break;
+								case 3:
+									cout << " ÷ "; m = m + 1; break;
+								}
+							}
+							else
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									cout << Operator[m - 1] << " + "; break;
+								case 1:
+									cout << Operator[m - 1] << " - "; break;
+								case 2:
+									cout << Operator[m - 1] << " x "; break;
+								case 3:
+									cout << Operator[m - 1] << " ÷ "; break;
+								}
+							}
+						}
+						cout << Operator[m - 1] << " = " << endl;         //输出最后一个多项式因子
+					}
+					else            //如果A[i]<B[i],则产生真分数运算式
+					{
+						int copyA = A[i];
+						int copyB = B[i];
+						int beichushuA = maxfigure;
+						int beichushuB = maxfigure;
+						int firstA = beichushuA% copyA;
+						int firstB = beichushuB% copyB;
+						while (firstA != 0)        //求A[i]和最大值的公约数，以便后面化简
+						{
+							int temp = copyA;
+							copyA = beichushuA%copyA;
+							beichushuA = temp;
+							firstA = beichushuA%copyA;
+						}
+						while (firstB != 0)
+						{
+							int temp = copyB;
+							copyB = beichushuB%copyB;
+							beichushuB = temp;
+							firstB = beichushuB%copyB;
+						}
+						int suanfu = rand() % 4;
+						switch (suanfu)
+						{
+						case 0:
+							cout << A[i] / copyA << "/" << maxfigure / copyA << " + " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 1:
+							cout << A[i] / copyA << "/" << maxfigure / copyA << " - " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 2:
+							cout << A[i] / copyA << "/" << maxfigure / copyA << " x " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 3:
+							cout << A[i] / copyA << "/" << maxfigure / copyA << " ÷ " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+							//让A[i]和最大值都除以公约数便可以得到无法再约分的最大公约数
+						}
+					}
+				}
+			}
+			else
+			{
+				cout << "*******************************************************************" << endl;
+				cout << "生成的四则运算式如下所示：" << endl;
+				cout << "*******************************************************************" << endl;
+				for (i = 0; i < count; i++)
+				{
+					if (A[i] > B[i])
+					{
+						int m;
+						int operator_count = 3 + rand() % 8;
+						int operatorfu_count = operator_count - 1;
+						for (m = 0; m < operator_count; m++)
+						{
+							Operator[m] = minfigure + rand() % maxfigure;
+						}
+						for (m = 0; m < operatorfu_count; m++)
+						{
+							Operatorfu[m] = rand() % 4;
+						}
+						for (m = 1; m < operator_count; m++)
+						{
+							if ((Operatorfu[m] / 2)>(Operatorfu[m - 1] / 2))
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									cout << "(" << Operator[m - 1] << " + " << Operator[m] << ")"; break;
+								case 1:
+									cout << "(" << Operator[m - 1] << " - " << Operator[m] << ")"; break;
+								case 2:
+									cout << "(" << Operator[m - 1] << " x " << Operator[m] << ")"; break;
+								case 3:
+									if (0 == Operator[m])
+									{
+										cout << "(" << Operator[m - 1] << " ÷ " << Operator[m] + 2 << ")";
+									}
+									break;
+								}
+								switch (Operatorfu[m])
+								{
+								case 0:
+									cout << " + "; m = m + 1; break;
+								case 1:
+									cout << " - "; m = m + 1; break;
+								case 2:
+									cout << " x "; m = m + 1; break;
+								case 3:
+									cout << " ÷ "; m = m + 1; break;
+								}
+							}
+							else
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									cout << Operator[m - 1] << " + "; break;
+								case 1:
+									cout << Operator[m - 1] << " - "; break;
+								case 2:
+									cout << Operator[m - 1] << " x "; break;
+								case 3:
+									cout << Operator[m - 1] << " ÷ "; break;
+								}
+							}
+						}
+						cout << Operator[m - 1] << " = " << endl;
+					}
+					else
+					{
+						int copyB = B[i];
+						int first = B[i] % A[i];
+						while (first != 0)
+						{
+							int temp = A[i];
+							A[i] = B[i] % A[i];
+							B[i] = temp;
+							first = B[i] % A[i];
+						}
+						int suanfu = rand() % 4;
+						switch (suanfu)
+						{
+						case 0:
+							cout << A[i] << " + " << B[i] << "=" << endl; break;
+						case 1:
+							cout << A[i] << " - " << B[i] << "=" << endl; break;
+						case 2:
+							cout << A[i] << " x " << B[i] << "=" << endl; break;
+						case 3:
+							cout << copyB << " ÷ " << A[i] << " = " << endl; break;
+						}
+					}
+				}
+			}
+		}
+		else   //不允许生成乘除法，则只有加减法
+		{
+			if ((minfigure < 0) && (0 == negative_jiajian))  //若加减法不允许出现负数，则应该重新设定数值的范围，让最小值大于零，保证生成的随机数都是大于零的
+			{
+				cout << "请重新设置数值范围，最小值应大于零以保证加法无负数！" << endl;
+				cout << "请输入参与四则运算的数值范围(格式如：1  100)：";
+				cin >> minfigure >> maxfigure;
+				for (i = 0; i < count; i++)     //重新生成的随机数仍是不重复的
+				{
+					A[i] = minfigure + rand() % maxfigure;
+					B[i] = minfigure + rand() % maxfigure;
+					for (j = 0; j < i; j++)
+					{
+						if (A[i] == A[j])
+						{
+							A[i] = minfigure + rand() % maxfigure;
+							j = 0;
+						}
+						if (B[i] == B[j])
+						{
+							B[i] = minfigure + rand() % maxfigure;
+							j = 0;
+						}
+					}
+				}
+			}
+			for (i = 0; i < count; i++)
+			{
+				if (A[i]>B[i])
+				{
+					int suanfu = rand() % 2;
+					switch (suanfu)
+					{
+					case 0:
+						cout << A[i] << " + " << B[i] << "=" << endl; break;
+					case 1:
+						cout << A[i] << " - " << B[i] << "=" << endl; break;
+					}
+				}
+				else
+				{
+					int copyA = A[i];
+					int copyB = B[i];
+					int beichushuA = maxfigure;
+					int beichushuB = maxfigure;
+					int firstA = beichushuA% copyA;
+					int firstB = beichushuB% copyB;
+					while (firstA != 0)
+					{
+						int temp = copyA;
+						copyA = beichushuA%copyA;
+						beichushuA = temp;
+						firstA = beichushuA%copyA;
+					}
+					while (firstB != 0)
+					{
+						int temp = copyB;
+						copyB = beichushuB%copyB;
+						beichushuB = temp;
+						firstB = beichushuB%copyB;
+					}
+					int suanfu = rand() % 2;
+					switch (suanfu)
+					{
+					case 0:
+						cout << A[i] / copyA << "/" << maxfigure / copyA << " + " << B[i] / copyB << "/" << maxfigure / copyB << "=" << endl; break;
+					case 1:
+						cout << B[i] / copyB << "/" << maxfigure / copyB << " - " << A[i] / copyA << "/" << maxfigure / copyA << "=" << endl; break;
+					}
+				}
+			}
+		}
+	}
+	else  //将最后生成的四则运算式存到文件中，内部实现的功能与输出到屏幕一致，只是输出不一样
+	{
+		if (1 == chengchu)
+		{
+			if (remainder_chengchu)
+			{
+				ofstream fileout;  //定义输出文件流的对象
+				fileout.open("biaodashi.txt", ios::out);  //打开文件，该文件为指定路径，则存放在工程的当前目录下
+				fileout << "*******************************************************************" << endl;
+				fileout << "生成的四则运算式如下所示：" << endl;
+				fileout << "*******************************************************************" << endl;
+				for (i = 0; i < count; i++)
+				{
+					if (A[i] > B[i])
+					{
+						int m;
+						int operator_count = 3 + rand() % 8;
+						int operatorfu_count = operator_count - 1;
+						for (m = 0; m < operator_count; m++)
+						{
+							Operator[m] = minfigure + rand() % maxfigure;
+						}
+						for (m = 0; m < operatorfu_count; m++)
+						{
+							Operatorfu[m] = rand() % 4;
+						}
+						for (m = 1; m < operator_count; m++)
+						{
+							if ((Operatorfu[m] / 2)>(Operatorfu[m - 1] / 2))
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									fileout << "(" << Operator[m - 1] << " + " << Operator[m] << ")"; break;
+								case 1:
+									fileout << "(" << Operator[m - 1] << " - " << Operator[m] << ")"; break;
+								case 2:
+									fileout << "(" << Operator[m - 1] << " x " << Operator[m] << ")"; break;
+								case 3:
+									if (0 == Operator[m])
+									{
+										fileout << "(" << Operator[m - 1] << " ÷ " << Operator[m] + 2 << ")";
+									}
+									break;
+								}
+								switch (Operatorfu[m])
+								{
+								case 0:
+									fileout << " + "; m = m + 1; break;
+								case 1:
+									fileout << " - "; m = m + 1; break;
+								case 2:
+									fileout << " x "; m = m + 1; break;
+								case 3:
+									fileout << " ÷ "; m = m + 1; break;
+								}
+							}
+							else
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									fileout << Operator[m - 1] << " + "; break;
+								case 1:
+									fileout << Operator[m - 1] << " - "; break;
+								case 2:
+									fileout << Operator[m - 1] << " x "; break;
+								case 3:
+									fileout << Operator[m - 1] << " ÷ "; break;
+								}
+							}
+						}
+						fileout << Operator[m - 1] << " = " << endl;
+					}
+					else
+					{
+						int copyA = A[i];
+						int copyB = B[i];
+						int beichushuA = maxfigure;
+						int beichushuB = maxfigure;
+						int firstA = beichushuA% copyA;
+						int firstB = beichushuB% copyB;
+						while (firstA != 0)
+						{
+							int temp = copyA;
+							copyA = beichushuA%copyA;
+							beichushuA = temp;
+							firstA = beichushuA%copyA;
+						}
+						while (firstB != 0)
+						{
+							int temp = copyB;
+							copyB = beichushuB%copyB;
+							beichushuB = temp;
+							firstB = beichushuB%copyB;
+						}
+						int suanfu = rand() % 4;
+						switch (suanfu)
+						{
+						case 0:
+							fileout << A[i] / copyA << "/" << maxfigure / copyA << " + " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 1:
+							fileout << A[i] / copyA << "/" << maxfigure / copyA << " - " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 2:
+							fileout << A[i] / copyA << "/" << maxfigure / copyA << " x " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						case 3:
+							fileout << A[i] / copyA << "/" << maxfigure / copyA << " ÷ " << B[i] / copyB << "/" << maxfigure / copyB << " = " << endl; break;
+						}
+					}
+				}
+				fileout.close();   //关闭文件，断开与文件连接
+			}
+			else
+			{
+				ofstream fileout;
+				fileout.open("biaodashi.txt", ios::out);
+				fileout << "*******************************************************************" << endl;
+				fileout << "生成的四则运算式如下所示：" << endl;
+				fileout << "*******************************************************************" << endl;
+				for (i = 0; i < count; i++)
+				{
+					if (A[i] > B[i])
+					{
+						int m;
+						int operator_count = 3 + rand() % 8;
+						int operatorfu_count = operator_count - 1;
+						for (m = 0; m < operator_count; m++)
+						{
+							Operator[m] = minfigure + rand() % maxfigure;
+						}
+						for (m = 0; m < operatorfu_count; m++)
+						{
+							Operatorfu[m] = rand() % 4;
+						}
+						for (m = 1; m < operator_count; m++)
+						{
+							if ((Operatorfu[m] / 2)>(Operatorfu[m - 1] / 2))
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									fileout << "(" << Operator[m - 1] << " + " << Operator[m] << ")"; break;
+								case 1:
+									fileout << "(" << Operator[m - 1] << " - " << Operator[m] << ")"; break;
+								case 2:
+									fileout << "(" << Operator[m - 1] << " x " << Operator[m] << ")"; break;
+								case 3:
+									if (0 == Operator[m])
+									{
+										fileout << "(" << Operator[m - 1] << " ÷ " << Operator[m] + 2 << ")";
+									}
+									break;
+								}
+								switch (Operatorfu[m])
+								{
+								case 0:
+									fileout << " + "; m = m + 1; break;
+								case 1:
+									fileout << " - "; m = m + 1; break;
+								case 2:
+									fileout << " x "; m = m + 1; break;
+								case 3:
+									fileout << " ÷ "; m = m + 1; break;
+								}
+							}
+							else
+							{
+								switch (Operatorfu[m - 1])
+								{
+								case 0:
+									fileout << Operator[m - 1] << " + "; break;
+								case 1:
+									fileout << Operator[m - 1] << " - "; break;
+								case 2:
+									fileout << Operator[m - 1] << " x "; break;
+								case 3:
+									fileout << Operator[m - 1] << " ÷ "; break;
+								}
+							}
+						}
+						fileout << Operator[m - 1] << " = " << endl;
+					}
+					else
+					{
+						int copyB = B[i];
+						int first = B[i] % A[i];
+						while (first != 0)
+						{
+							int temp = A[i];
+							A[i] = B[i] % A[i];
+							B[i] = temp;
+							first = B[i] % A[i];
+						}
+						int suanfu = rand() % 4;
+						switch (suanfu)
+						{
+						case 0:
+							fileout << A[i] << " + " << B[i] << "=" << endl; break;
+						case 1:
+							fileout << A[i] << " - " << B[i] << "=" << endl; break;
+						case 2:
+							fileout << A[i] << " x " << B[i] << "=" << endl; break;
+						case 3:
+							fileout << copyB << " ÷ " << A[i] << " = " << endl; break;
+						}
+					}
+				}
+				fileout.close();
+			}
+		}
+		else
+		{
+			if ((minfigure < 0) && (0 == negative_jiajian))
+			{
+				cout << "请重新设置数值范围，最小值应大于零以保证加法无负数！" << endl;
+				cout << "请输入参与四则运算的数值范围(格式如：1  100)：";
+				cin >> minfigure >> maxfigure;
+				for (i = 0; i < count; i++)
+				{
+					A[i] = minfigure + rand() % maxfigure;
+					B[i] = minfigure + rand() % maxfigure;
+					for (j = 0; j < i; j++)
+					{
+						if (A[i] == A[j])
+						{
+							A[i] = minfigure + rand() % maxfigure;
+							j = 0;
+						}
+						if (B[i] == B[j])
+						{
+							B[i] = minfigure + rand() % maxfigure;
+							j = 0;
+						}
+					}
+				}
+			}
+			ofstream fileout;
+			fileout.open("biaodashi.txt", ios::out);
+			for (i = 0; i < count; i++)
+			{
+				if (A[i]>B[i])
+				{
+					int suanfu = rand() % 2;
+					switch (suanfu)
+					{
+					case 0:
+						fileout << A[i] << " + " << B[i] << "=" << endl; break;
+					case 1:
+						fileout << A[i] << " - " << B[i] << "=" << endl; break;
+					}
+				}
+				else
+				{
+					int copyA = A[i];
+					int copyB = B[i];
+					int beichushuA = maxfigure;
+					int beichushuB = maxfigure;
+					int firstA = beichushuA% copyA;
+					int firstB = beichushuB% copyB;
+					while (firstA != 0)
+					{
+						int temp = copyA;
+						copyA = beichushuA%copyA;
+						beichushuA = temp;
+						firstA = beichushuA%copyA;
+					}
+					while (firstB != 0)
+					{
+						int temp = copyB;
+						copyB = beichushuB%copyB;
+						beichushuB = temp;
+						firstB = beichushuB%copyB;
+					}
+					int suanfu = rand() % 2;
+					switch (suanfu)
+					{
+					case 0:
+						fileout << A[i] / copyA << "/" << maxfigure / copyA << " + " << B[i] / copyB << "/" << maxfigure / copyB << "=" << endl; break;
+					case 1:
+						fileout << B[i] / copyB << "/" << maxfigure / copyB << " - " << A[i] / copyA << "/" << maxfigure / copyA << "=" << endl; break;
+					}
+				}
+			}
+			fileout.close();
+		}
+	}
+}
