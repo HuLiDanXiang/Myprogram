@@ -1,3 +1,8 @@
+//四则运算3程序
+//2016-03-17
+//在线答题系统，在屏幕上或者在文件中输出题目，用户输入结果，系统自动显示结果的错误或者正确
+//四则运算3在四则运算2的基础之上完成，并将四则运算2中未完成的部分功能继续完善
+
 #include<iostream>
 #include<fstream>
 #include<stdlib.h>
@@ -5,9 +10,10 @@
 #include<string>
 using namespace std;
 
+//生成两个存储数据的数组，主函数中的作用是用来进行判断是进行两位真分数的判断还是多位整数的四则运算
 void createArray(int A[], int B[], int count, int min, int max)
 {
-	while ((max - min + 1) < count)
+	while ((max - min + 1) < count)  //判断输入的数值范围是否合法
 	{
 		cout << "数值范围输入错误，请重新输入数值范围(友情提示：数值范围应大于运算式的数量)！" << endl;
 		cout << "请输入参与四则运算的数值范围(格式如：1  100)：";
@@ -15,10 +21,11 @@ void createArray(int A[], int B[], int count, int min, int max)
 	}
 	for (int i = 0; i < count; i++)
 	{
-
+		//生成A，B两个数组
 		A[i] = min + rand() % (max - min + 1);
 		B[i] = min + rand() % (max - min + 1);
 
+		//查重，使得A中或者B中的每一个元素都不相同
 		for (int j = 0; j < i; j++)
 		{
 			if (A[i] == A[j])
@@ -38,19 +45,26 @@ void createArray(int A[], int B[], int count, int min, int max)
 	}
 }
 
+//生成四个运算数函数，即多运算数式子中的每个操作数
 void create_Operand(int A[],int min,int max)
 {
+	//每次循环时调用该函数，即生成四个运算数
 	for (int i = 0; i < 4; i++)
 	{
 		A[i] = min + rand() % (max - min + 1);
 	}
 }
 
+//若用户选择不生成除法，则只生成含有加减运算的运算符，用string类型存放运算符，并将括号也存到数组中
 void create_Operator_JiaJian(string B[],int kuohao)
 {
-	if (1 == kuohao)
+	for (int i = 0; i < 5; i++)//对数组进行初始化
 	{
-		string C[3];
+		B[i] = 'a';
+	}
+	if (1 == kuohao)  //将括号的位置也存入运算符数组
+	{
+		string C[3] ;
 		for (int i = 0; i < 3; i++)
 		{
 			int Judge = rand() % 2;
@@ -79,7 +93,7 @@ void create_Operator_JiaJian(string B[],int kuohao)
 			}
 		}
 	}
-	else
+	else  //无括号
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -95,7 +109,8 @@ void create_Operator_JiaJian(string B[],int kuohao)
 	}
 }
 
-/*void create_Operator_ChengChu(string B[])
+//生成加减乘除四则运算的运算符
+void create_Operator_ChengChu(string B[])
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -109,13 +124,58 @@ void create_Operator_JiaJian(string B[],int kuohao)
 		case 2:
 			B[i] = 'x'; break;
 		case 3:
-			B[i] = '÷'; break;
+			B[i] = "÷"; break;
 		}
 	}
-}*/
+}
 
-int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
+//判断分数中的分子分母是否合法，即分子的绝对值是否小于分母
+void judge_Fraction(int &fenzi,int &fenmu,int max)
 {
+	if ((fenzi<0) && (((fenzi)*(-1))>max))
+	{
+		int temp = (-1)*fenzi;
+		fenzi = fenmu;
+		fenmu = temp*(-1);
+	}
+
+	//为保证分数相加相减后仍然是真分数，将分子设为小于二分之分母的整数
+	if (fenzi <= 0)
+	{
+		if (fenzi*(-1)>(max / 2))
+		{
+			fenzi = fenzi / 2;
+		}
+	}
+	if (fenzi>0)
+	{
+		if (fenzi>(max / 2))
+		{
+			fenzi = fenzi / 2;
+		}
+	}
+}
+
+//求分子和分母的最大公约数，以便将分子分母化简到最简
+int great_common_Divisor(int fenzi, int fenmu)
+{
+	int original_fenzi = fenzi;
+	int original_fenmu = fenmu;
+	int remainder = fenzi%fenmu;
+	while (remainder != 0)
+	{
+		int temp = fenmu;
+		fenmu = fenzi%fenmu;
+		fenzi = temp;
+		remainder = fenzi%fenmu;
+	}
+	return fenmu;
+}
+
+//计算加减运算式的值，返回一个result值
+int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int min,int max)
+{
+	//根据括号的位置分为三种情况讨论如何计算结果
 	if (1 == minus)
 	{
 		int result = A[0];
@@ -204,6 +264,7 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					result = A[0] - result;
 				}
 			}
+			return result;
 		}
 		else
 		{
@@ -218,8 +279,8 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					result = result - A[i + 1];
 				}
 			}
+			return result;
 		}
-		return result;
 	}
 	else
 	{
@@ -257,7 +318,7 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					}
 					else
 					{
-						B[0] = "+";
+						B[0] = '+';
 						result = result + A[0];
 					}
 				}
@@ -325,7 +386,7 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					}
 					else
 					{
-						B[1] = "+";
+						B[1] = '+';
 						result = result + result1;
 					}
 				}
@@ -360,7 +421,7 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					}
 					else
 					{
-						B[3] = "+";
+						B[3] = '+';
 						result = result + A[3];
 					}
 				}
@@ -376,11 +437,12 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 					}
 					else
 					{
-						B[0] = "+";
+						B[0] = '+';
 						result = result + A[0];
 					}
 				}
 			}
+			return result;
 		}
 		else
 		{
@@ -392,86 +454,1240 @@ int calculate_Jiajian(int A[], string B[],int kuohao,int minus,int max)
 				}
 				else
 				{
-					if (A[i]>A[i + 1])
+					if (result>A[i + 1])
 					{
 						result = result - A[i + 1];
 					}
 					else
 					{
-						B[i] == "+";
+						B[i] = '+';
 						result = result + A[i + 1];
 					}
 				}
 			}
+			return result;
 		}
-		return result;
 	}
 }
 
-void output_kuohaoScreen(int A[], string B[], int kuohao)
+//输出分数，并计算分数的值并且判断用户的计算是否正确
+int calculate_ProperFraction(int A[],int B[],int i,int min,int max,int print)
 {
-	if (1 == kuohao)
+	fstream fileout;
+	fileout.open("BiaoDaShi.txt", ios::app); //将每次生成的式子保存到文件
+	judge_Fraction(A[i], max,max);
+	judge_Fraction(B[i], max,max);
+	int divisor1 = great_common_Divisor(A[i], max);
+	int divisor2 = great_common_Divisor(B[i], max);
+	int inputfenzi, inputfenmu;
+	int suanfu = rand() % 4;
+	switch (suanfu)
 	{
-		if ((B[1] == "(") && (B[3] == ")"))
+	case 0:
+	{
+			  if (1 == print)
+			  {
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  cout << A[i] / divisor1 << "/" << max / divisor1 << " + " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  else
+			  {
+				  cout << "请打开当前目录中的BiaoDaShi.txt文件，查看运算式，并将结果输入屏幕上！";
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  fileout << A[i] / divisor1 << "/" << max / divisor1 << " + " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  cin >> inputfenzi >> inputfenmu;
+			  int divisor3 = great_common_Divisor((A[i] + B[i]), max);
+			  if (inputfenzi == ((A[i] + B[i]) / divisor3) && (inputfenmu == (max / divisor3)))  //判断输入的分子分母是否正确
+			  {
+				  cout << "恭喜你答对了！" << endl;
+			  }
+			  else
+			  {
+				  cout << "答错了，继续加油哦！" << endl;
+			  }
+			  break;
+	}	
+	case 1:
+	{
+			  if (1 == print)
+			  {
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  cout << A[i] / divisor1 << "/" << max / divisor1 << " - " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  else
+			  {
+				  cout << "请打开当前目录中的BiaoDaShi.txt文件，查看运算式，并将结果输入屏幕上！";
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  fileout << A[i] / divisor1 << "/" << max / divisor1 << " - " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  cin >> inputfenzi >> inputfenmu;
+			  int divisor3 = great_common_Divisor((A[i] - B[i]), max);
+			  if (inputfenzi == ((A[i] - B[i]) / divisor3) && (inputfenmu == (max / divisor3)))
+			  {
+				  cout << "恭喜你答对了！" << endl;
+			  }
+			  else
+			  {
+				  cout << "答错了，继续加油哦！" << endl;
+			  }
+			  break;
+	}
+	case 2:
+	{
+			  if (1 == print)
+			  {
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  cout << A[i] / divisor1 << "/" << max / divisor1 << " x " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  else
+			  {
+				  cout << "请打开当前目录中的BiaoDaShi.txt文件，查看运算式，并将结果输入屏幕上！";
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  fileout << A[i] / divisor1 << "/" << max / divisor1 << " x " << B[i] / divisor2 << "/" << max / divisor2 << " = " << endl;
+			  }
+			  cin >> inputfenzi >> inputfenmu;
+			  int divisor3 = great_common_Divisor((A[i] * B[i]), (max * max));
+			  if (inputfenzi == ((A[i] * B[i]) / divisor3) && (inputfenmu == ((max*max) / divisor3)))
+			  {
+				  cout << "恭喜你答对了！" << endl;
+			  }
+			  else
+			  {
+				  cout << "答错了，继续加油哦！" << endl;
+			  }
+			  break;
+	}
+	case 3:
+	{
+			  if (1 == print)
+			  {
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  cout << B[i] / divisor2 << "/" << max / divisor2 << " ÷ " << A[i] / divisor1 << "/" << max / divisor1 << " = " << endl;
+			  }
+			  else
+			  {
+				  cout << "请打开当前目录中的BiaoDaShi.txt文件，查看运算式，并将结果输入屏幕上！";
+				  cout << "请计算该分数算式（结果输入格式：分子 空格 分母）：";
+				  fileout << B[i] / divisor2 << "/" << max / divisor2 << " ÷ " << A[i] / divisor1 << "/" << max / divisor1 << " = " << endl;
+			  }
+			  cin >> inputfenzi >> inputfenmu;
+			  int divisor3 = great_common_Divisor(B[i], A[i]);
+			  if ((inputfenzi == (B[i] / divisor3)) && (inputfenmu == (A[i] / divisor3)))
+			  {
+				  cout << "恭喜你答对了！" << endl;
+			  }
+			  else
+			  {
+				  cout << "答错了，继续加油哦！" << endl;
+			  }
+			  break;
+	}	
+	}
+	return 0;
+}
+
+//输出加减四则运算式，一种方式为输出到屏幕，另一种方式为输出到文件
+void output_JiaJian(int A[], string B[], int kuohao,int print)
+{
+	if (1 == print)
+	{
+		if (1 == kuohao) //根据括号位置分为三种情况输入算式
 		{
-			cout << A[0] << B[0] << B[1] << A[1] << B[2] << A[2] << B[3] << B[4] << A[3] << " = " << endl;
+			if ((B[1] == "(") && (B[3] == ")"))
+			{
+				cout << A[0] << " " << B[0] << " " << B[1] << " " << A[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << B[4] << " " << A[3] << " = " << endl;
+			}
+			if ((B[2] == "(") && (B[4] == ")"))
+			{
+				cout << A[0] << " " << B[0] << " " << A[1] << " " << B[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << A[3] << " " << B[4] << " " << " = " << endl;
+			}
+			if ((B[1] == "(") && (B[4] == ")"))
+			{
+				cout << A[0] << " " << B[0] << " " << B[1] << " " << A[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << A[3] << " " << B[4] << " " << " = " << endl;
+			}
 		}
-		if ((B[2] == "(") && (B[4] == ")"))
+		else
 		{
-			cout << A[0] << B[0] << A[1] << B[1] << B[2] << A[2] << B[3] << A[3] << B[4] << " = " << endl;
-		}
-		if ((B[1] == "(") && (B[4] == ")"))
-		{
-			cout << A[0] << B[0] << B[1] << A[1] << B[2] << A[2] << B[3] << A[3] << B[4] << " = " << endl;
+			for (int i = 0; i < 3; i++)
+			{
+				cout << A[i] << " " << B[i] << " ";
+			}
+			cout << A[3] << " = " << endl;
 		}
 	}
-	else
+	else //将式子存到文件中
 	{
-		for (int i = 0; i < 3; i++)
+		cout << "请打开当前目录中的BiaoDaShi.txt文件，查看运算式，并将结果输入屏幕上！";
+		fstream fileout;
+		fileout.open("BiaoDaShi.txt", ios::app);
+		if (1 == kuohao)
 		{
-			cout << A[i] << " " << B[i] << " ";
+			if ((B[1] == "(") && (B[3] == ")"))
+			{
+				fileout << A[0] << " " << B[0] << " " << B[1] << " " << A[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << B[4] << " " << A[3] << " = " << endl;
+			}
+			if ((B[2] == "(") && (B[4] == ")"))
+			{
+				fileout << A[0] << " " << B[0] << " " << A[1] << " " << B[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << A[3] << " " << B[4] << " " << " = " << endl;
+			}
+			if ((B[1] == "(") && (B[4] == ")"))
+			{
+				fileout << A[0] << " " << B[0] << " " << B[1] << " " << A[1] << " " << B[2] << " " << A[2] << " " << B[3] << " " << A[3] << " " << B[4] << " " << " = " << endl;
+			}
 		}
-		cout << A[3] << " = " << endl;
+		else
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				fileout << A[i] << " " << B[i] << " ";
+			}
+			fileout << A[3] << " = " << endl;
+		}
+		fileout.close();
 	}
 }
 
-void minus_JiaJian(int A[], string B[], int min, int max, int minus,int kuohao)
+//判断用户输入的结果是否正确，给出相应的提示
+void minus_JiaJian(int A[], string B[], int min, int max, int minus,int kuohao,int print)
 {
 	int inputResult;
 	create_Operand(A, min, max);
 	create_Operator_JiaJian(B,kuohao);
-	cout << "请输入算式的结果：";
-	output_kuohaoScreen(A, B, kuohao);
+	int calculateResult = calculate_Jiajian(A, B, kuohao, minus, min,max);
+	output_JiaJian(A, B, kuohao,print);
 	cin >> inputResult;
-	int calculateResult = calculate_Jiajian(A, B, kuohao, minus, max);
 	if (calculateResult == inputResult)
 	{
 		cout << "恭喜你答对了！" << endl;
 	}
 	else
 	{
-		cout << "答错了，继续加油哦！";
+		cout << "答错了，继续加油哦！" << endl;
 	}
 }
 
-void main()
+//生成字符数组
+void MulDivShuZu(string B[])
 {
-	int array_A[100], array_B[100];
-	int arrayA[10];
-	string arrayB[10];
-	int count;
-	cout << "请输入运算式的数量：";
-	cin >> count;
-	int min, max;
-	cout << "请输入数值的范围：";
-	cin >> min >> max;
-	createArray(array_A, array_B, count, min, max);
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		cout << array_A[i] << "\t" << array_B[i] << endl;
+		create_Operator_ChengChu(B);
 	}
-	for (int i = 0; i < count; i++)
+	if ((B[0] == "÷") && (B[1] == "÷") && (B[2] == "÷"))  //规定不能有连续的3个除法
 	{
-		minus_JiaJian(arrayA, arrayB, min, max, 0, 1);
+		int intJudge = 1 + rand() % 2;
+		switch (intJudge)
+		{
+		case 1:
+			B[2] = '+';
+			break;
+		case 2:
+			B[2] = '-';
+			break;
+		}
 	}
+}
+
+//生成运算符数组
+int YSShuZu(string B[], int kuohao)
+{
+	int intYunSFNum;
+	if (0 == kuohao)   //如果没有括号
+	{
+		MulDivShuZu(B);
+		intYunSFNum = 3;
+	}
+	else  //如果有括号
+	{
+		MulDivShuZu(B);    //获得没有括号的运算符数组
+		string chLinShi[3];   //临时数组
+		for (int i = 0; i < 3; i++)
+		{
+			chLinShi[i] = B[i];
+		}
+		intYunSFNum = 3;
+		int intRealstring[3];
+		for (int i = 0; i < 3; i++)   //将运算符按优先级存储起来
+		{
+			if (B[i] == "+" || B[i] == "-")
+			{
+				intRealstring[i] = 1;
+			}
+			else
+			{
+				intRealstring[i] = 2;
+			}
+		}
+
+		for (int i = 0; i < 2; i++)
+		{
+			if (chLinShi[0] == "÷")
+			{
+				if (chLinShi[1] == "÷")
+				{
+					intYunSFNum = 5;
+					B[0] = "(";
+					B[1] = chLinShi[0];
+					B[2] = ")";
+					B[3] = chLinShi[1];
+					B[4] = chLinShi[2];
+					break;
+				}
+
+			}
+			if (intRealstring[i]<intRealstring[i + 1])
+			{
+				if (i == 0)
+				{
+					if (chLinShi[i + 1] == "÷")
+					{
+						if (chLinShi[i + 2] == "÷")
+						{
+							intYunSFNum = 7;
+							B[0] = "(";
+							B[1] = "(";
+							B[2] = chLinShi[0];
+							B[3] = ")";
+							B[4] = chLinShi[1];
+							B[5] = ")";
+							B[6] = chLinShi[2];
+						}
+						else
+						{
+							intYunSFNum = 5;
+							B[0] = "(";
+							B[1] = chLinShi[0];
+							B[2] = ")";
+							B[3] = chLinShi[1];
+							B[4] = chLinShi[2];
+						}
+					}
+					else
+					{
+						intYunSFNum = 5;
+						B[0] = "(";
+						B[1] = chLinShi[0];
+						B[2] = ")";
+						B[3] = chLinShi[1];
+						B[4] = chLinShi[2];
+					}
+				}
+				else
+				{
+					intYunSFNum = 5;
+					B[0] = chLinShi[0];
+					B[1] = "(";
+					B[2] = chLinShi[1];
+					B[3] = ")";
+					B[4] = chLinShi[2];
+				}
+			}
+		}
+	}
+	return intYunSFNum;
+}
+
+//函数实现有无余数
+void RemainderFouction(int A[], string B[], int intYunSuanFNu)
+{
+	//包括括号和乘除法的区分
+	//首先实现对乘除法有无余数的判断
+	//其次加入括号，判断括号内的乘除法有无余数的实现
+	//对运算符数组循环寻找括号和乘除号
+	int intCycleNum = 0;
+	int intParentNum = 0;
+	for (intCycleNum = 0; intCycleNum < intYunSuanFNu; intCycleNum++)
+	{
+		if ((B[intCycleNum] == "(") || (B[intCycleNum] == ")"))
+		{
+			intParentNum += 1;
+		}
+		if (B[intCycleNum] == "÷")
+		{
+			if (A[intCycleNum + 1 - intParentNum] == 0)
+			{
+				A[intCycleNum + 1 - intParentNum] = 1 + rand() % 10;
+			}
+			if (intCycleNum != 0 && B[intCycleNum - 1] == ")")    //此IF语句是测试（a+b）÷c的情况
+			{
+				int num;
+				num = intCycleNum - intParentNum;     //标识没有括号的字符数组中除号的位置
+
+				int intSum;   //括号内的数的运算结果
+				int intLeft;  //括号内参与运算的左边的数
+				int intRight;  //括号内参与运算的右边的数
+				string strYunSF;
+				intLeft = A[num - 1];
+				intRight = A[num];
+				strYunSF = B[intCycleNum - 2];
+				if (strYunSF == "+")
+				{
+					intSum = intLeft + intRight;
+				}
+				else if (strYunSF == "-")
+				{
+					intSum = intLeft - intRight;
+				}
+				else if (strYunSF == "x")
+				{
+					intSum = intLeft * intRight;
+				}
+				else
+				{
+					intSum = intLeft / intRight;
+				}
+
+				if (intSum < 0)
+				{
+					int a;
+					a = A[num];
+					A[num] = A[num + 1];
+					A[num + 1] = A[num];
+					intSum = A[num] - A[num + 1];
+				}
+
+				int intYushu;    //余数
+				intYushu = intSum % (A[num + 1]);   //除号两边的数求商
+				if (intYushu != 0)
+				{
+					if (intSum == 1)
+					{
+						A[num + 1] = 1;
+					}
+					else
+					{
+						int j = intSum - 1;
+						for (int i = 0; i < intSum; i++)
+						{
+							intYushu = intSum%j;
+							if (intYushu == 0)
+							{
+								A[num + 1] = j;
+								break;
+							}
+							j--;
+						}
+					}
+
+				}
+
+				//下面是（a+b）÷c÷d的情况
+				if (B[intCycleNum + 1] == "÷")
+				{
+					int intOneResult;         //intOneReslut=(a+b)÷c
+					intOneResult = intSum / A[num + 1];
+					int intSecResult;         //intSecResult=(a+b)÷c÷d
+					if (A[num + 2] == 0)
+					{
+						A[num + 2] = 1 + rand() % 10;
+					}
+					intSecResult = intOneResult % (A[num + 2]);
+
+					if (intSecResult != 0)
+					{
+						if (intOneResult == 1)
+						{
+							A[num + 2] = 1;
+						}
+						else
+						{
+							int intSecYue;
+							intSecYue = intOneResult - 1;
+
+							for (int i = 0; i < intOneResult; i++)
+							{
+								intSecResult = intOneResult%intSecYue;
+								if (intSecResult == 0)
+								{
+									A[num + 2] = intSecYue;
+									break;
+								}
+								intSecYue--;
+							}
+						}
+					}
+				}
+			}
+			else   //a÷b的情况
+			{
+				int num;
+				num = intCycleNum - intParentNum;
+
+				int YuShu;
+				if (A[num + 1] == 0)
+				{
+					A[num + 1] = 1 + rand() % 10;
+				}
+				YuShu = (A[num]) % (A[num + 1]);
+				if (YuShu != 0)
+				{
+					if (A[num] == 1)
+					{
+						A[num + 1] = 1;
+					}
+					else
+					{
+						int j = A[num] - 1;
+						for (int i = 0; i < A[num]; i++)
+						{
+							YuShu = A[num] % j;
+							if (YuShu == 0)
+							{
+								A[num + 1] = j;
+								break;
+							}
+							j--;
+						}
+					}
+
+				}
+
+				//下面是a÷b÷c的情况
+				if (B[intCycleNum + 1] == "÷")
+				{
+					int OneRes;
+					OneRes = A[num] / A[num + 1];
+					int yushus;
+					if (A[num + 2] == 0)
+					{
+						A[num + 2] = 1 + rand() % 10;
+					}
+					yushus = OneRes % (A[num + 2]);
+					if (yushus != 0)
+					{
+						if (OneRes == 1)
+						{
+							A[num + 2] = 1;
+						}
+						else
+						{
+							int yueshu;
+							yueshu = OneRes - 1;
+							for (int i = 0; i < OneRes; i++)
+							{
+								yushus = OneRes%yueshu;
+								if (yushus == 0)
+								{
+	    							A[num + 2] = yueshu;
+									break;
+								}
+								yueshu--;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+//计算四则运算式的值，返回Jieguo
+double OperatorMD(int intYunSuanShu[], string strYunSuanFu[], int YunSuanfuN)
+{
+	double jieguo = 0;
+
+	if ((strYunSuanFu[0] == "(") && (strYunSuanFu[1] == "("))
+	{
+		double jieguo1;
+		if (strYunSuanFu[2] == "+")
+		{
+			jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) / intYunSuanShu[2] / intYunSuanShu[3];
+		}
+		else
+		{
+			jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) / intYunSuanShu[2] / intYunSuanShu[3];
+		}
+	}
+	if (strYunSuanFu[0] == "(")
+	{
+		double jieguo1;
+		if (strYunSuanFu[1] == "+")
+		{
+			if (strYunSuanFu[3] == "x")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[3] == "÷")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) / intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) / intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) / intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) / intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+		}
+		if (strYunSuanFu[1] == "-")
+		{
+			if (intYunSuanShu[0] < intYunSuanShu[1])
+			{
+				int aa;
+				aa = intYunSuanShu[0];
+				intYunSuanShu[0] = intYunSuanShu[1];
+				intYunSuanShu[1] = aa;
+			}
+			if (strYunSuanFu[3] == "x")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) * intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) * intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) * intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) * intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[3] == "÷")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) / intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) / intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) / intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] - intYunSuanShu[1]) / intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+		}
+		if (strYunSuanFu[1] == "÷")
+		{
+			if (strYunSuanFu[3] == "x")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] + intYunSuanShu[1]) * intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[3] == "÷")
+			{
+				if (strYunSuanFu[4] == "+")
+				{
+					jieguo = (intYunSuanShu[0] / intYunSuanShu[1]) / intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "-")
+				{
+					jieguo = (intYunSuanShu[0] / intYunSuanShu[1]) / intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = (intYunSuanShu[0] / intYunSuanShu[1]) / intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = (intYunSuanShu[0] / intYunSuanShu[1]) / intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+		}
+	}
+
+	if (strYunSuanFu[1] == "(" && strYunSuanFu[0] != "(")
+	{
+		//cout << "开始运行！" << endl;
+		int jieguo1;
+		if (strYunSuanFu[2] == "+")
+		{
+			if (strYunSuanFu[0] == "+")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] + (intYunSuanShu[1] + intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "+(+)*" << endl;
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] + (intYunSuanShu[1] + intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "+(+)/" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "-")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] - (intYunSuanShu[1] + intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "-(+)*" << endl;
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] - (intYunSuanShu[1] + intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "-(+)/" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "x")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] * (intYunSuanShu[1] + intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "*(+)*" << endl;
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] * (intYunSuanShu[1] + intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "*(+)/" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "÷")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] / (intYunSuanShu[1] + intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "/(+)*" << endl;
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] / (intYunSuanShu[1] + intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "/(+)/" << endl;
+				}
+			}
+		}
+		else
+		{
+			if (strYunSuanFu[0] == "+")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					if (intYunSuanShu[1] < intYunSuanShu[2])
+					{
+						int aa;
+						aa = intYunSuanShu[1];
+						intYunSuanShu[1] = intYunSuanShu[2];
+						intYunSuanShu[2] = aa;
+					}
+					jieguo = intYunSuanShu[0] + (intYunSuanShu[1] - intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "+(-)*" << endl;
+				}
+				else
+				{
+					if (intYunSuanShu[1] < intYunSuanShu[2])
+					{
+						int aa;
+						aa = intYunSuanShu[1];
+						intYunSuanShu[1] = intYunSuanShu[2];
+						intYunSuanShu[2] = aa;
+					}
+					jieguo = intYunSuanShu[0] + (intYunSuanShu[1] - intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "+(-)/" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "-")
+			{
+				if (intYunSuanShu[1] < intYunSuanShu[2])
+				{
+					int aa;
+					aa = intYunSuanShu[1];
+					intYunSuanShu[1] = intYunSuanShu[2];
+					intYunSuanShu[2] = aa;
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] - (intYunSuanShu[1] - intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "-(-)*" << endl;
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = intYunSuanShu[0] - (intYunSuanShu[1] - intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "-(-)*" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "x")
+			{
+				if (intYunSuanShu[1] < intYunSuanShu[2])
+				{
+					int aa;
+					aa = intYunSuanShu[1];
+					intYunSuanShu[1] = intYunSuanShu[2];
+					intYunSuanShu[2] = aa;
+				}
+				if (strYunSuanFu[4] == "x")
+				{
+					jieguo = intYunSuanShu[0] * (intYunSuanShu[1] - intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "*(-)*" << endl;
+				}
+				if (strYunSuanFu[4] == "÷")
+				{
+					jieguo = intYunSuanShu[0] * (intYunSuanShu[1] - intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "*(-)/" << endl;
+				}
+			}
+			if (strYunSuanFu[0] == "÷")
+			{
+				if (strYunSuanFu[4] == "x")
+				{
+					int ab = intYunSuanShu[1] - intYunSuanShu[2];
+					if (ab == 0)
+					{
+						intYunSuanShu[1] = 8;
+						intYunSuanShu[2] = 7 - rand() % 4;
+					}
+					if (intYunSuanShu[1] < intYunSuanShu[2])
+					{
+						int aa;
+						aa = intYunSuanShu[1];
+						intYunSuanShu[1] = intYunSuanShu[2];
+						intYunSuanShu[2] = aa;
+					}
+					jieguo = intYunSuanShu[0] / (intYunSuanShu[1] - intYunSuanShu[2])*intYunSuanShu[3];
+					//cout << "/(-)*" << endl;
+				}
+				else
+				{
+					int ab = intYunSuanShu[1] - intYunSuanShu[2];
+					if (ab == 0)
+					{
+						intYunSuanShu[1] = 8;
+						intYunSuanShu[2] = 7 - rand() % 4;
+					}
+					if (intYunSuanShu[1] < intYunSuanShu[2])
+					{
+						int aa;
+						aa = intYunSuanShu[1];
+						intYunSuanShu[1] = intYunSuanShu[2];
+						intYunSuanShu[2] = aa;
+					}
+					jieguo = intYunSuanShu[0] / (intYunSuanShu[1] - intYunSuanShu[2]) / intYunSuanShu[3];
+					//cout << "/(-)/" << endl;
+				}
+			}
+		}
+
+	}
+	if ((strYunSuanFu[0] != "(") && (strYunSuanFu[1] != "("))
+	{
+		int jieguo1;
+		if (strYunSuanFu[0] == "+")
+		{
+			if (strYunSuanFu[1] == "+")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] + intYunSuanShu[1] + intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] + intYunSuanShu[1] + intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			else
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] + intYunSuanShu[1] - intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] + intYunSuanShu[1] - intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+		}
+		if (strYunSuanFu[0] == "-")
+		{
+			if (strYunSuanFu[1] == "+")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					if (intYunSuanShu[0] < intYunSuanShu[1])
+					{
+						int aa;
+						aa = intYunSuanShu[0];
+						intYunSuanShu[0] = intYunSuanShu[1];
+						intYunSuanShu[1] = aa;
+					}
+					jieguo = intYunSuanShu[0] - intYunSuanShu[1] + intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] - intYunSuanShu[1] + intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			else
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] - intYunSuanShu[1] - intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] - intYunSuanShu[1] - intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+		}
+
+
+
+		if (strYunSuanFu[0] == "x")
+		{
+			if (strYunSuanFu[1] == "+")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] + intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] + intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[1] == "-")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] - intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] - intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[1] == "x")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] * intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "-")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] * intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "x")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] * intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "÷")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] * intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[1] == "÷")   //strYunSuanFu[1]=="÷"
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] / intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "-")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] / intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "x")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] / intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "÷")
+				{
+					jieguo = intYunSuanShu[0] * intYunSuanShu[1] / intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+		}
+		if (strYunSuanFu[0] == "÷")
+		{
+			if (strYunSuanFu[1] == "+")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] + intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] + intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[1] == "-")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] - intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				else
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] - intYunSuanShu[2] - intYunSuanShu[3];
+				}
+			}
+			if (strYunSuanFu[1] == "x")
+			{
+				if (strYunSuanFu[2] == "+")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] * intYunSuanShu[2] + intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "-")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] * intYunSuanShu[2] - intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "x")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] * intYunSuanShu[2] * intYunSuanShu[3];
+				}
+				if (strYunSuanFu[2] == "÷")
+				{
+					jieguo = intYunSuanShu[0] / intYunSuanShu[1] * intYunSuanShu[2] / intYunSuanShu[3];
+				}
+			}
+
+		}
+	}
+	return jieguo;
+}
+
+//输出四则运算式，并判断用户输入的答案是否正确
+void output_ChengChu(int A[],string B[],int min,int max,int kuohao,int print)
+{
+	int kuohaoNum=0;
+	double inputresult;
+	double JieGuo;
+	fstream fileout;
+	fileout.open("BiaoDaShi.txt", ios::app);
+	create_Operand(A, min, max);
+	MulDivShuZu(B);
+	int suanfuNum = YSShuZu(B, kuohao);
+	RemainderFouction(A, B, suanfuNum);
+	JieGuo = OperatorMD(A, B, suanfuNum);
+	cout << "请输入运算式的结果：" << endl;
+	if (3 == suanfuNum)
+	{
+		if (1 == print)
+		{
+			cout << A[0] << " " << B[0] << " " << A[1] << " " << B[1] << " " << A[2] << " " << B[2] << " " << A[3] << " = " << endl;
+		}
+		else
+		{
+			fileout << A[0] << " " << B[0] << " " << A[1] << " " << B[1] << " " << A[2] << " " << B[2] << " " << A[3] << " = " << endl;
+		}
+	}
+	else
+	{
+		if (1 == print)
+		{
+			for (int i = 0; i < suanfuNum; i++)
+			{
+				if ((B[i] == "(") || (B[i] == ")"))
+				{
+					if (i == 0 || ((i != 0) && B[i] == "("))
+					{
+						kuohaoNum++;
+						cout << " " << B[i] << " ";
+						continue;
+					}
+					else
+					{
+						if (B[i - 2] == ")")
+						{
+							kuohaoNum++;
+							cout << " " << B[i] << " ";
+							continue;
+						}
+						else
+						{
+							cout << A[i - kuohaoNum];
+							kuohaoNum++;
+							cout << " " << B[i] << " ";
+							continue;
+						}
+					}
+				}
+				else
+				{
+					if ((i>0) && (B[i - 1] == "("))
+					{
+						cout << A[i - kuohaoNum] << " " << B[i] << " ";
+					}
+					else if ((i == 0) && (B[i] != "("))
+					{
+						cout << A[0] << " " << B[0] << " ";
+					}
+					else
+					{
+						cout << " " << B[i] << " " << A[i - kuohaoNum + 1];
+					}
+				}
+			}
+			cout << " = " << endl;
+		}
+		else
+		{
+			for (int i = 0; i < suanfuNum; i++)
+			{
+				if ((B[i] == "(") || (B[i] == ")"))
+				{
+					if (i == 0 || ((i != 0) && B[i] == "("))
+					{
+						kuohaoNum++;
+						fileout << " " << B[i] << " ";
+						continue;
+					}
+					else
+					{
+						if (B[i - 2] == ")")
+						{
+							kuohaoNum++;
+							fileout << " " << B[i] << " ";
+							continue;
+						}
+						else
+						{
+							fileout << A[i - kuohaoNum];
+							kuohaoNum++;
+							fileout << " " << B[i] << " ";
+							continue;
+						}
+
+					}
+				}
+				else
+				{
+					if ((i>0) && (B[i - 1] == "("))
+					{
+						fileout << A[i - kuohaoNum] << " " << B[i] << " ";
+					}
+					else if ((i == 0) && (B[i] != "("))
+					{
+						fileout << A[0] << " " << B[0] << " ";
+					}
+					else
+					{
+						fileout << " " << B[i] << " " << A[i - kuohaoNum + 1];
+					}
+				}
+			}
+			fileout << " = " << endl;
+		}	
+	}
+	fileout.close();
+	cin >> inputresult;
+	if (inputresult == JieGuo)
+	{
+		cout << "恭喜你答对了！" << endl;
+	}
+	else
+	{
+		cout << "答错了，继续加油哦！" << endl;
+	}
+}
+
+//主函数
+int main()
+{
+	fstream fileout;
+	fileout.open("BiaoDaShi.txt", ios::out); //以输出的方式打开文件，将其上次存放的内容清空
+	fileout.close(); //关闭文件
+	srand((int)time(NULL));
+	int array_A[100], array_B[100];  //作为判断条件和运算数使用的两个数组
+	int arrayA[10];  //每次循环中需要用到的存放运算数的数组
+	string arrayB[10];  //存放运算符的数组
+	int userSelect[8];  //记录用户的选择意志
+	//为开发程序方便做一下注释
+	//int min，用userSelect[0]表示;
+	//int max，用userSelect[1]表示;
+	//int count，用userSelect[2]表示;
+	//int chengchu，用userSelect[5]表示;
+	//int remainder，用userSelect[6]表示;
+	//int minus，用userSelect[7]表示;
+	//int printstyle，用userSelect[3]表示;
+	//int parenthese，用userSelect[4]表示;
+
+	//功能设置界面
+	cout << "*******************************************************************" << endl;
+	cout << "*                         四则运算生成器                          *" << endl;
+	cout << "*******************************************************************" << endl;
+	cout << "请按照系统提示设置生成器的功能：" << endl;
+	cout << "请输入参与四则运算的数值范围(格式如：1  100)：";
+	cin >> userSelect[0] >> userSelect[1];
+	cout << "请输入生成四则运算式的数量：";
+	cin >> userSelect[2];
+	cout << "请选择打印方式（1 屏幕输出  0 输出到文档）：";
+	cin >> userSelect[3];
+	cout << "是否需要生成带括号的运算式（1 是  0 否）：";
+	cin >> userSelect[4];
+	cout << "请设置系统的下列参数：" << endl;
+	cout << "    1 四则运算可否生成乘除法（1 是  0 否）：";
+	cin >> userSelect[5];
+	if (1 == userSelect[5]) //若没有除法，则只有加减法
+	{
+		cout << "    2 除法运算是否可有余数（1 是  0 否）：";
+		cin >> userSelect[6];
+	}
+	else
+	{
+		cout << "    2 加减法是否可有负数（1 是  0 否）：";
+		cin >> userSelect[7];
+	}
+	if (0 == userSelect[7])
+	{
+		while (userSelect[0] < 0)
+		{
+			cout << "加减法运算不能有负数参与，请重新设置数值范围！" << endl;
+			cout << "请输入参与四则运算的数值范围(格式如：1  100)：";
+			cin >> userSelect[0] >> userSelect[1];
+		}
+	}
+	createArray(array_A, array_B, userSelect[2], userSelect[0], userSelect[1]);
+	for (int i = 0; i < userSelect[2]; i++)
+	{
+		if (array_A[i]>array_B[i])
+		{
+			calculate_ProperFraction(array_A, array_B, i,userSelect[0], userSelect[1],userSelect[3]);
+		}
+		else
+		{
+			if (1 == userSelect[5])
+			{
+				output_ChengChu(arrayA, arrayB, userSelect[0], userSelect[1], userSelect[4], userSelect[3]);
+			}
+			else
+			{
+				minus_JiaJian(arrayA, arrayB, userSelect[0], userSelect[1], userSelect[7], userSelect[4],userSelect[3]);
+			}
+		}
+	}
+	return 0;
 }
